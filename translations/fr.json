@@ -1,0 +1,24 @@
+{
+    "config": {
+      "abort": {
+        "already_configured": "Le device a déjà été configuré"
+      },
+      "step": {
+        "detect": {
+          "title": "Sélectionnez le chemin de votre dongle EnOcean ou choisissez \"Custom Path\"",
+          "data": {
+            "path": "Chemin du dongle USB"
+          }
+        },
+        "manuel": {
+            "title": "Entrez manuelle le chemin du dongle",
+            "data": {
+                "device": "Chemin du dongle"
+            }
+        }
+      },
+      "error": {
+        "invalid_device": "Chemin vers dongle invalide"
+      }
+    }
+  }
