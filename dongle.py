@@ -4,10 +4,13 @@ import glob
 from os.path import basename, normpath
 
 from enocean.communicators import SerialCommunicator
+from enocean.utils import to_hex_string
 from serial import SerialException
 from .const import LOGGER, SIGNAL_RECEIVE_MESSAGE, SIGNAL_SEND_MESSAGE
 
+from enocean.protocol.constants import PACKET, RETURN_CODE
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
+from enocean.consolelogger import init_logging
 
 
 class EnOceanDongle:
@@ -16,6 +19,7 @@ class EnOceanDongle:
     def __init__(self, hass, serial_path) -> None:
         """Initialize the dongle"""
         print("initialize dongle")
+        init_logging()
         self._communicator = SerialCommunicator(
             port=serial_path, callback=self.callback
         )
@@ -31,13 +35,20 @@ class EnOceanDongle:
             self.hass, SIGNAL_SEND_MESSAGE, self._send_message_callback
         )
 
-    def _send_message_callback(self, command):
-        """Sends a command through the EnOcean dongle"""
-        self._communicator.send(command)
+    def _send_message_callback(self, packet):
+        """Sends a packet through the EnOcean dongle"""
+        print(
+            "VINCENT : send packet %s, data=%s, optional=%s"
+            % (
+                to_hex_string(packet.packet_type),
+                to_hex_string(packet.data),
+                to_hex_string(packet.optional),
+            )
+        )
+        self._communicator.send(packet)
 
-    def send_message(self, command):
-        """Sends a command through the EnOcean dongle (public)"""
-        self._communicator.send(command)
+    def send_message(self, packet):
+        self._send_message_callback(packet)
 
     @property
     def communicator(self):
@@ -46,7 +57,23 @@ class EnOceanDongle:
 
     def callback(self, packet):
         """handle a packet received by the dongle"""
-        print("packet received")
+        print(
+            "VINCENT : packet received ; %s, data=%s, optional=%s"
+            % (
+                to_hex_string(packet.packet_type),
+                to_hex_string(packet.data),
+                to_hex_string(packet.optional),
+            )
+        )
+        if packet.packet_type == PACKET.RESPONSE:  # anwer
+            print("VINCENT : packet is response")
+            return_code = packet.data[0]
+            if (
+                return_code == RETURN_CODE.ERROR
+                or return_code == RETURN_CODE.NOT_SUPPORTED
+            ):
+                print("VINCENT : error !")
+
         dispatcher_send(self.hass, SIGNAL_RECEIVE_MESSAGE, packet)
 
     def unload(self):

@@ -1,35 +1,35 @@
 """ Represent a light """
 
 from ctypes import Union
+import math
 from typing import Any
 import voluptuous as vol
-import logging
-import time
-from .eltako_bus import Packet
+from config.custom_components.homeassistant_enocean.light import CONF_SENDER_ID
 
-from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.light import PLATFORM_SCHEMA, LightEntity
-from homeassistant.const import CONF_DEVICE_ID, CONF_DEVICES, CONF_NAME
+from homeassistant.core import HomeAssistant
+from homeassistant.components.light import (
+    ATTR_BRIGHTNESS,
+    PLATFORM_SCHEMA,
+    ColorMode,
+    LightEntity,
+)
+from homeassistant.const import CONF_DEVICE_ID, CONF_MODEL, CONF_NAME
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.typing import ConfigType
+from enocean.protocol.constants import PACKET, RORG
 
-from .const import DOMAIN
+from .device import EltakoEntity
+from .const import DOMAIN, LOGGER
 
-DEVICE_SCHEMA = vol.Schema(
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Required(CONF_DEVICE_ID): cv.string,
+        vol.Required(CONF_DEVICE_ID): vol.All(cv.ensure_list, [vol.Coerce(int)]),
+        vol.Required(CONF_SENDER_ID): vol.All(cv.ensure_list, [vol.Coerce(int)]),
+        vol.Optional(CONF_MODEL, default="F4SR14"): vol.In(["F4SR14", "FUD14"]),
     }
 )
-
-# Validation of the user's configuration
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    # {vol.Required(CONF_DEVICES, default={}): {cv.string: DEVICE_SCHEMA}}
-    {vol.Required(CONF_NAME): cv.string, vol.Required(CONF_DEVICE_ID): cv.string}
-)
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def setup_platform(
@@ -39,66 +39,33 @@ def setup_platform(
     discovery_info,
 ) -> None:
     """Set up Eltako FS14R Light"""
-
     print("VINCENT : SETUP lights")
-    _LOGGER.debug("VINCENT : setup lights")
 
-    bus = hass.data[DOMAIN]["bus"]
+    device_id = config.get(CONF_DEVICE_ID)
+    device_name = config.get(CONF_NAME)
+    sender_id = config.get(CONF_SENDER_ID)
+    model = config.get(CONF_MODEL)
 
-    # bus = EltakoBus()
+    if model == "F4SR14":
+        light = F4SR14Entity(device_id, device_name, sender_id)
+    elif model == "FUD14":
+        light = FUD14Entity(device_id, device_name, sender_id)
 
-    # connect to lights
-    # print("VINCENT : ", str(config.get(CONF_DEVICES, {})))
-    lights = []
-
-    name = config.get(CONF_NAME)
-    sender_id_str = config[CONF_DEVICE_ID].split("-")
-    sender_id = list(map(lambda v: int("0x" + v, 16), sender_id_str))
-    lights.append(FSR14Entity(bus, config[CONF_DEVICE_ID], name, sender_id))
-    print("VINCENT : add light %s - %s" % (name, config[CONF_DEVICE_ID]))
-
-    # for device_id, device_config in config.get(CONF_DEVICES, {}).items():
-    #     print("Eltako Light of ID : %s" % (device_id))
-    #     name = device_config[CONF_NAME]
-    #     sender_id_str = device_config[CONF_DEVICE_ID].split("-")
-    #     sender_id = list(map(lambda v: int("0x" + v, 16), sender_id_str))
-
-    #     print("LIGHT : %s" % (str(sender_id)))
-
-    #     lights.append(FSR14Entity(bus, device_id, name, sender_id))
-
-    # add entities
-    add_entities(lights)
+    add_entities([light])
 
 
-class LightPacket(Packet):
-    """Represents a light packet for a simple light"""
+class EltakoLightEntity(EltakoEntity, LightEntity):
+    """Represents a generic Eltako light (F4SR14, FUD14)"""
 
-    def __init__(self, sender):
-        super().__init__(sender=sender, r_1=3)
-
-
-class FSR14Entity(LightEntity):
-    """Represents an Eltako FSR14 Light"""
-
-    _attr_has_entity_name = True
-    _attr_name = None
-    _device_id = None
+    _is_on = None
     _sender_id = None
-    _bus = None
+    _color_mode = None
+    _supported_color_modes = {ColorMode.ONOFF}
 
-    def __init__(self, bus, device_id, name, sender_id):
-        """Description"""
+    def __init__(self, device_id, device_name, sender_id) -> None:
+        super().__init__(device_id, device_name)
         self._is_on = None
-        self._bus = bus
-        self._attr_name = name
-        self._device_id = device_id
         self._sender_id = sender_id
-
-    @property
-    def name(self):
-        """Name of the entity."""
-        return self._attr_name
 
     @property
     def is_on(self):
@@ -108,14 +75,119 @@ class FSR14Entity(LightEntity):
     def assumed_state(self) -> bool:
         return self._is_on is None
 
+    @property
+    def color_mode(self):  # -> Union[ColorMode, str, None]:
+        return self._color_mode
+
+    @property
+    def supported_color_modes(self):  # -> Union[set[ColorMode], set[str], None]:
+        return self._supported_color_modes
+
+
+class F4SR14Entity(EltakoLightEntity):
+    """Represents an Eltako F4SR14 Light"""
+
+    def __init__(self, device_id, device_name, sender_id):
+        """Description"""
+        super().__init__(device_id, device_name, sender_id)
+        self._color_mode = ColorMode.ONOFF
+        self.model = "F4SR14"
+
     def turn_on(self, **kwargs: Any) -> None:
-        packet = LightPacket(sender=self._sender_id)
-        self._bus.send(packet)
-        self._is_on = True
-        # return super().turn_on(**kwargs)
+        data = [RORG.BS4, 0x01, 0x00, 0x00, 0x09]
+        data.extend(self._sender_id)
+        data.extend([0x00])  # status
+
+        optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
+        # optional = [0x00]
+        # optional.append(self.device_id)
+        # optional.append([0x00, 0x00])
+        self.send_command(data, optional, PACKET.RADIO)
+        # don't set _is_on to true, wait for callback
+        # self._is_on = True
 
     def turn_off(self, **kwargs: Any) -> None:
-        packet = LightPacket(sender=self._sender_id)
-        self._bus.send(packet)
-        self._is_on = False
-        # return super().turn_off(**kwargs)
+        command = [RORG.BS4, 0x01, 0x00, 0x00, 0x08]
+        command.extend(self._sender_id)
+        command.extend([0x00])  # status
+
+        optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x34, 0x00]
+        self.send_command(command, optional, PACKET.RADIO)
+
+        # don't set ._is_on to false, wait for callback
+        # self._is_on = False
+
+    def value_changed(self, packet):
+        """Updates the internal state of the device when a packet arrives"""
+        val = packet.data[1]
+        self._is_on = val == 0x70
+        # schedule_update_ha_state()
+        print("VINCENT:  update light - light if on : %s" % (str(self._is_on)))
+        self.schedule_update_ha_state()
+
+
+class FUD14Entity(EltakoLightEntity):
+    """Represents an Eltako FUD14 Light"""
+
+    def __init__(self, device_id, device_name, sender_id):
+        """Description"""
+        super().__init__(device_id, device_name, sender_id)
+        self._color_mode = ColorMode.ONOFF
+        self.model = "FUD14"
+        self._brightness = 77
+        self._supported_color_modes = {ColorMode.BRIGHTNESS}
+        self._color_mode = ColorMode.BRIGHTNESS
+
+    def turn_on(self, **kwargs: Any) -> None:
+        if (brightness := kwargs.get(ATTR_BRIGHTNESS)) is not None:
+            self._brightness = brightness
+        val = math.floor(self._brightness / 256.0 * 100.0)
+        if val == 0:
+            val = 1
+        print("turn FUD14 on : %s (brightness %s)" % (str(val), self._brightness))
+        data = [0xA5, 0x02, val, 0x00, 0x09]
+        data.extend(self._sender_id)
+        data.extend([0x00])
+
+        # optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
+        optional = [0x00]
+        optional.append(self.device_id)
+        optional.append([0x00, 0x00])
+        optional = []
+
+        self.send_command(data, optional, 0x01)
+        # don't set _is_on to true, wait for callback
+        # self._is_on = True
+
+    def turn_off(self, **kwargs: Any) -> None:
+        command = [0xA5, 0x02, 0x00, 0x00, 0x08]
+        command.extend(self._sender_id)
+        command.extend([0x00])
+
+        optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
+        self.send_command(command, optional, 0x01)
+
+        # don't set ._is_on to false, wait for callback
+        # self._is_on = False
+
+    @property
+    def brightness(self):
+        """Brightness of the light.
+
+        This method is optional. Removing it indicates to Home Assistant
+        that brightness is not supported for this light.
+        """
+        return self._brightness
+
+    def value_changed(self, packet):
+        """Updates the internal state of the device when a packet arrives"""
+        val = packet.data[2]
+        self._is_on = bool(val != 0)
+        if val != 0:
+            self._brightness = math.floor(val * 256 / 100)
+        # schedule_update_ha_state()
+        print(
+            "VINCENT:  update light - light if on : %s (%s%%)"
+            % (str(self._is_on), str(val))
+        )
+        self.schedule_update_ha_state()
