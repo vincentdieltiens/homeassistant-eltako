@@ -13,3 +13,6 @@ ERROR_INVALID_DONGLE_PATH = "invalid_device"
 LOGGER = logging.getLogger(__package__)
 
 PLATFORMS = [Platform.LIGHT]
+
+TEACH_IN = "teach_in"
+TEACH_OUT = "teach_out"

@@ -1,0 +1,47 @@
+teach_in:
+  name: Teach-In Device
+  description: Start the Teach-In-Process between the dongle and a device. During the teach-in normal packets are ignored. \
+    This service only handles one teach in response, so you can only teach one device at a time
+  fields:
+    device_id:
+      name: Sender ID for this device (should be Base-Id + increment) for BS4-based teach-in
+      description:
+        "A communicator can use up to 128 different Base ID values within the allowed
+        range of the start Base ID. If nothing is specified, the default Base ID will
+        be used when communicating over 4BS. This ID has to be within the range of your transceiver."
+      required: false
+      advanced: true
+      example: 01-BE-EF-23
+      default: ""
+    type:
+      name: "Sender Type : FSR14, FSB14 or FUD14"
+      description:
+        "This is the type of the device you want to teach-int."
+      required: true
+      advanced: true
+      example: FSR14
+      default: ""
+
+teach_out:
+  name: Teach-Out Device
+  description: Start the Teach-Out-Process between the dongle and a device. During the teach-out normal packets are ignored. \
+    This service only handles one teach out response, so you can only teach one device at a time
+  fields:
+    device_id:
+      name: Sender ID for this device (should be Base-Id + increment) for BS4-based teach-in
+      description:
+        "A communicator can use up to 128 different Base ID values within the allowed
+        range of the start Base ID. If nothing is specified, the default Base ID will
+        be used when communicating over 4BS. This ID has to be within the range of your transceiver."
+      required: false
+      advanced: true
+      example: 01-BE-EF-23
+      default: ""
+    type:
+      name: "Sender Type : FSR14, FSB14 or FUD14"
+      description:
+        "This is the type of the device you want to teach-out."
+      required: true
+      advanced: true
+      example: FSR14
+      default: ""

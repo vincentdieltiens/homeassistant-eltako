@@ -1,10 +1,12 @@
 """The eltako integration."""
 from __future__ import annotations
 
+from .services import async_setup_services
+
 
 from .eltako_bus import EltakoBus
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_DEVICE, Platform
 from homeassistant.core import Config, HomeAssistant
 
@@ -14,14 +16,33 @@ import asyncio
 
 
 async def async_setup(hass: HomeAssistant, config) -> bool:
-
-    hass.states.async_set("eltako.loaded", "False")
-
     # bus = EltakoBus()
     # hass.data[DOMAIN] = {}
     # hass.data[DOMAIN]["bus"] = bus
 
+    if not hass.data.get(DOMAIN):
+        async_setup_services(hass)
+
     print("Eltako Initialized!")
+
+    # support for text-based configuration (legacy)
+    if DOMAIN not in config:
+        return True
+
+    # there is an entry available for our domain
+    if hass.config_entries.async_entries(DOMAIN):
+        # We can only have one dongle. If there is already one in the config,
+        # there is no need to import the yaml based config.
+
+        # The dongle is configured via the UI. The entities are configured via yaml
+        return True
+
+    # no USB dongle (or PiHat) is configured, yet
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_IMPORT}, data=config[DOMAIN]
+        )
+    )
 
     return True
 

@@ -5,6 +5,7 @@ import math
 from typing import Any
 import voluptuous as vol
 from config.custom_components.homeassistant_enocean.light import CONF_SENDER_ID
+from enocean.utils import combine_hex
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.core import HomeAssistant
@@ -83,6 +84,12 @@ class EltakoLightEntity(EltakoEntity, LightEntity):
     def supported_color_modes(self):  # -> Union[set[ColorMode], set[str], None]:
         return self._supported_color_modes
 
+    @property
+    def unique_id(self):
+        _id = self.device_id.copy()
+        _id.extend(self._sender_id)
+        return combine_hex(_id)
+
 
 class F4SR14Entity(EltakoLightEntity):
     """Represents an Eltako F4SR14 Light"""
@@ -94,7 +101,9 @@ class F4SR14Entity(EltakoLightEntity):
         self.model = "F4SR14"
 
     def turn_on(self, **kwargs: Any) -> None:
-        data = [RORG.BS4, 0x01, 0x00, 0x00, 0x09]
+        # 0 0 0 0 1 0 0 1
+        # 0 1 2 3 4 5 6 7
+        data = [RORG.BS4, 0x01, 0x00, 0x00, 0x09]  #
         data.extend(self._sender_id)
         data.extend([0x00])  # status
 

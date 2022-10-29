@@ -31,6 +31,7 @@ class EnOceanDongle:
     async def async_setup(self):
         """Finish the setup of the brigde and supported platforms"""
         self._communicator.start()
+        print("GET ID : %s" % (self._communicator.base_id))
         self.dispatcher_disconnect_handle = async_dispatcher_connect(
             self.hass, SIGNAL_SEND_MESSAGE, self._send_message_callback
         )
