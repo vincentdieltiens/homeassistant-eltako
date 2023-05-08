@@ -4,7 +4,6 @@ from ctypes import Union
 import math
 from typing import Any
 import voluptuous as vol
-from config.custom_components.homeassistant_enocean.light import CONF_SENDER_ID
 from enocean.utils import combine_hex
 
 import homeassistant.helpers.config_validation as cv
@@ -21,7 +20,7 @@ from homeassistant.helpers.typing import ConfigType
 from enocean.protocol.constants import PACKET, RORG
 
 from .device import EltakoEntity
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, CONF_SENDER_ID
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {

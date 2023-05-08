@@ -18,7 +18,7 @@ class EnOceanDongle:
 
     def __init__(self, hass, serial_path) -> None:
         """Initialize the dongle"""
-        print("initialize dongle")
+        LOGGER.debug("initialize dongle")
         init_logging()
         self._communicator = SerialCommunicator(
             port=serial_path, callback=self.callback
@@ -31,14 +31,14 @@ class EnOceanDongle:
     async def async_setup(self):
         """Finish the setup of the brigde and supported platforms"""
         self._communicator.start()
-        print("GET ID : %s" % (self._communicator.base_id))
+        LOGGER.debug("GET ID : %s" % (self._communicator.base_id))
         self.dispatcher_disconnect_handle = async_dispatcher_connect(
             self.hass, SIGNAL_SEND_MESSAGE, self._send_message_callback
         )
 
     def _send_message_callback(self, packet):
         """Sends a packet through the EnOcean dongle"""
-        print(
+        LOGGER.debug(
             "VINCENT : send packet %s, data=%s, optional=%s"
             % (
                 to_hex_string(packet.packet_type),
@@ -58,7 +58,7 @@ class EnOceanDongle:
 
     def callback(self, packet):
         """handle a packet received by the dongle"""
-        print(
+        LOGGER.debug(
             "VINCENT : packet received ; %s, data=%s, optional=%s"
             % (
                 to_hex_string(packet.packet_type),
@@ -67,13 +67,15 @@ class EnOceanDongle:
             )
         )
         if packet.packet_type == PACKET.RESPONSE:  # anwer
-            print("VINCENT : packet is response")
+            LOGGER.debug("VINCENT : packet is response")
             return_code = packet.data[0]
             if (
                 return_code == RETURN_CODE.ERROR
                 or return_code == RETURN_CODE.NOT_SUPPORTED
             ):
-                print("VINCENT : error !")
+                LOGGER.debug("VINCENT : error !")
+        else:
+            LOGGER.debug("VINCENT : packet is not response.")
 
         dispatcher_send(self.hass, SIGNAL_RECEIVE_MESSAGE, packet)
 

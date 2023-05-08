@@ -7,7 +7,7 @@ from math import ceil
 
 from enocean.protocol.constants import RORG
 from enocean.protocol.packet import PACKET
-from enocean.utils import combine_hex
+from enocean.utils import combine_hex, to_hex_string
 import voluptuous as vol
 
 from homeassistant.components.cover import (
@@ -105,6 +105,7 @@ class FSB14Entity(EltakoEntity, CoverEntity):
             | CoverEntityFeature.STOP
             | CoverEntityFeature.SET_POSITION
         )
+        self._is_opened = None
 
     @property
     def current_cover_position(self) -> int | None:
@@ -146,7 +147,7 @@ class FSB14Entity(EltakoEntity, CoverEntity):
     def set_cover_position(self, **kwargs) -> None:
         """Set the cover position."""
 
-        print("VINCENT : SET_COVER_POSITION %s" % (self._position))
+        LOGGER.debug("VINCENT : SET_COVER_POSITION %s" % (self._position))
 
         if kwargs[ATTR_POSITION] == self._position:
             self._is_opening = False
@@ -172,11 +173,11 @@ class FSB14Entity(EltakoEntity, CoverEntity):
         This method is called when there is an incoming packet associated
         with this platform.
         """
-        print("FSB14 value changed!")
+        LOGGER.debug("FSB14 value changed2!")
         # position is inversed in Home Assistant and in EnOcean:
         # 0 means 'closed' in Home Assistant and 'open' in EnOcean
         # 100 means 'open' in Home Assistant and 'closed' in EnOcean
-        print("VINCENT cover data : ", packet.data)
+        LOGGER.debug("VINCENT cover data : ", to_hex_string(packet.data))
 
         rorg = packet.data[0]
         new_duration = packet.data[2]
@@ -184,17 +185,31 @@ class FSB14Entity(EltakoEntity, CoverEntity):
         # fsb 14 returns :
         # - 0xF6/RPS answer for closing, opening, fully closed and fully opened
         # - BS4 for teach in
-        # - BS4 for stop positin
+        # - BS4 for stop position
         if rorg == RORG.BS4:
-            self._position = (new_duration) / self._duration * 100
+            
+            self._position = 100 - ((new_duration) / self._duration * 100)
             self._is_opening = False
             self._is_closing = False
-            self._is_closed = False
+            self._is_closed = self._position == 0
+            # self._is_closed = packet.data[3] == 0x02
+            # self._is_opened = packet.data[3] == 0x01
+            
+
+            # Be sure the position is 0 if closed
+            # if (self._is_closed):
+            #     self.position = 0
+            # elif (self._is_opened):
+            #     self.position = 100
+
             self.schedule_update_ha_state()
-            print("VINCENT : new duration : %s" % (new_duration))
-            print("VINCENT : new position : %s" % (self._position))
-            print("VINCENT : is_opening : %s" % (self._is_opening))
-            print("VINCENT : is_closing : %s" % (self._is_closing))
+            
+            LOGGER.debug("VINCENT : closed ? : %s (%s)" % (to_hex_string(packet.data[3]), packet.data[3]))
+            LOGGER.debug("VINCENT : new duration : %s" % (new_duration))
+            LOGGER.debug("VINCENT : new position : %s" % (self._position))
+            LOGGER.debug("VINCENT : is_opening : %s" % (self._is_opening))
+            LOGGER.debug("VINCENT : is_closing : %s" % (self._is_closing))
+            LOGGER.debug("VINCENT : is_closed : %s" % (self._is_closed))
         elif rorg == RORG.RPS:
             position = packet.data[1]
             if position == 0x50:  # closed
@@ -217,9 +232,9 @@ class FSB14Entity(EltakoEntity, CoverEntity):
                 raise Exception("value not understood")
 
             self.schedule_update_ha_state()
-            print("VINCENT : new position : %s" % (self._position))
-            print("VINCENT : is_opening : %s" % (self._is_opening))
-            print("VINCENT : is_closing : %s" % (self._is_closing))
+            LOGGER.debug("VINCENT : new position : %s" % (self._position))
+            LOGGER.debug("VINCENT : is_opening : %s" % (self._is_opening))
+            LOGGER.debug("VINCENT : is_closing : %s" % (self._is_closing))
 
     def send_telegram(self, command: EnOceanCoverCommand, position: int = 0):
         # if self._position is None:
@@ -252,13 +267,13 @@ class FSB14Entity(EltakoEntity, CoverEntity):
                     )
                     direction = COVER_OPEN
 
-            print("VINCENT : diff_duration = %s" % (diff_duration))
-            print("VINCENT : new position = %s" % (position))
-            print("VINCENT : self._duration = %s" % (self._duration))
+            LOGGER.debug("VINCENT : diff_duration = %s" % (diff_duration))
+            LOGGER.debug("VINCENT : new position = %s" % (position))
+            LOGGER.debug("VINCENT : self._duration = %s" % (self._duration))
             # diff_duration = ceil(
             #     self._duration * (100 - abs(current_position - position)) / 100.0
             # )
-            print("VINCENT : diff_percentage : %s" % (diff_duration))
+            LOGGER.debug("VINCENT : diff_percentage : %s" % (diff_duration))
         elif command == EnOceanCoverCommand.STOP:
             direction = COVER_STOP
             diff_duration = 0

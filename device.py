@@ -5,7 +5,7 @@ from enocean.utils import combine_hex, to_hex_string
 
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
 from homeassistant.helpers.entity import Entity
-from .const import DOMAIN, SIGNAL_RECEIVE_MESSAGE, SIGNAL_SEND_MESSAGE
+from .const import DOMAIN, SIGNAL_RECEIVE_MESSAGE, SIGNAL_SEND_MESSAGE, LOGGER
 
 
 class EltakoEntity(Entity):
@@ -30,15 +30,15 @@ class EltakoEntity(Entity):
         """Handle incoming packet"""
 
         if packet.packet_type == PACKET.RADIO_ERP1:
-            print(
-                "VINCENT : packet compare %s vs %s"
-                % (packet.sender_int, combine_hex(self.device_id))
-            )
+            # LOGGER.debug(
+            #     "VINCENT : packet compare %s vs %s"
+            #     % (packet.sender_int, combine_hex(self.device_id))
+            # )
             if packet.sender_int == combine_hex(self.device_id):
-                print("VINCENT : update value")
+                # LOGGER.debug("VINCENT : update value")
                 self.value_changed(packet)
         else:
-            print(
+            LOGGER.debug(
                 "Packet is not of type RADIO_ERP1. Type %s : ",
                 to_hex_string([packet.packet_type]),
             )

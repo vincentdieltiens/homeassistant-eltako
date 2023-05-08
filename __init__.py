@@ -3,9 +3,6 @@ from __future__ import annotations
 
 from .services import async_setup_services
 
-
-from .eltako_bus import EltakoBus
-
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_DEVICE, Platform
 from homeassistant.core import Config, HomeAssistant
@@ -16,10 +13,6 @@ import asyncio
 
 
 async def async_setup(hass: HomeAssistant, config) -> bool:
-    # bus = EltakoBus()
-    # hass.data[DOMAIN] = {}
-    # hass.data[DOMAIN]["bus"] = bus
-
     if not hass.data.get(DOMAIN):
         async_setup_services(hass)
 

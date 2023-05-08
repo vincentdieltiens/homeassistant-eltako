@@ -1,13 +1,13 @@
 """ Teach in module for eltako devices """
 import queue
 from time import time
-from config.custom_components.homeassistant_eltako.const import (
+from ..const import (
     LOGGER,
     SIGNAL_SEND_MESSAGE,
     TEACH_IN,
-    TEACH_OUT,
+    TEACH_OUT
 )
-from config.custom_components.homeassistant_eltako.utils import (
+from ..utils import (
     get_communicator_reference,
     hex_list_to_str,
     str_to_hex_list,

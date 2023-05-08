@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from tkinter.ttk import Separator
 
 from enocean.communicators import Communicator
 
