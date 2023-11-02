@@ -180,15 +180,24 @@ class FSB14Entity(EltakoEntity, CoverEntity):
         LOGGER.debug("VINCENT cover data : ", to_hex_string(packet.data))
 
         rorg = packet.data[0]
-        new_duration = packet.data[2]
 
         # fsb 14 returns :
         # - 0xF6/RPS answer for closing, opening, fully closed and fully opened
         # - BS4 for teach in
         # - BS4 for stop position
         if rorg == RORG.BS4:
+            new_duration = (packet.data[2] + packet.data[1] * 256) # (runtime in DB3 (MSB) + DB2 (LSB) in 100 ms)
             
-            self._position = 100 - ((new_duration) / self._duration * 100)
+            ## Unknow position after restart, I set 50%
+            if self._position is None: self._position = int(50)
+
+            ## Driven up
+            if packet.data[3] == 0x01:
+                self._position = min(int(self._position + new_duration / self._duration * 100),100)
+            ## Driven down
+            if packet.data[3] == 0x02:
+                self._position = max(int(self._position - new_duration / self._duration * 100),0)
+
             self._is_opening = False
             self._is_closing = False
             self._is_closed = self._position == 0
@@ -205,20 +214,22 @@ class FSB14Entity(EltakoEntity, CoverEntity):
             self.schedule_update_ha_state()
             
             LOGGER.debug("VINCENT : closed ? : %s (%s)" % (to_hex_string(packet.data[3]), packet.data[3]))
-            LOGGER.debug("VINCENT : new duration : %s" % (new_duration))
-            LOGGER.debug("VINCENT : new position : %s" % (self._position))
+            LOGGER.debug("VINCENT : duration in packet %s,%s (%s,%s)" % (to_hex_string(packet.data[1]),to_hex_string(packet.data[2]), packet.data[1], packet.data[2]))
+            LOGGER.debug("VINCENT : new duration : %s [100 ms]" % (new_duration))
+            LOGGER.debug("VINCENT : duration : %s [100 ms]" % (self._duration))
+            LOGGER.debug("VINCENT : new position : %s [percent]" % (self._position))
             LOGGER.debug("VINCENT : is_opening : %s" % (self._is_opening))
             LOGGER.debug("VINCENT : is_closing : %s" % (self._is_closing))
             LOGGER.debug("VINCENT : is_closed : %s" % (self._is_closed))
         elif rorg == RORG.RPS:
             position = packet.data[1]
             if position == 0x50:  # closed
-                self._position = 0
+                self._position = int(0)
                 self._is_opening = False
                 self._is_closing = False
                 self._is_closed = True
             elif position == 0x70:  # opend
-                self._position = 100
+                self._position = int(100)
                 self._is_opening = False
                 self._is_closing = False
                 self._is_closed = False
