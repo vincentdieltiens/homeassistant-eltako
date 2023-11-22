@@ -18,3 +18,4 @@ TEACH_IN = "teach_in"
 TEACH_OUT = "teach_out"
 
 CONF_SENDER_ID = "sender_id"
+CONF_DELAY = "delay"

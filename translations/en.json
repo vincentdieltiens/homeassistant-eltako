@@ -1,10 +1,35 @@
 {
-    "config": {
-      "abort": {
-        "already_configured": "Device is already configured"
+  "config": {
+    "abort": {
+      "already_configured": "The device has already been configured"
+    },
+    "step": {
+      "detect": {
+        "title": "Choose your EnOcean dongle's path or choose \"Custom Path\"",
+        "data": {
+          "path": "USB dongle path"
+        }
       },
-      "error": {
-        "invalid_device": "[%key:common::config_flow::error::cannot_connect%]"
+      "manuel": {
+        "title": "Manually enter the dongle's path",
+        "data": {
+          "device": "Path of the dongle"
+        }
+      }
+    },
+    "error": {
+      "invalid_device": "Invalid dongle's path"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "delay": "Delay"
+        },
+        "description": "Define a delay"
       }
     }
   }
+}

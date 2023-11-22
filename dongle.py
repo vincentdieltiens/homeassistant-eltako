@@ -17,7 +17,7 @@ from enocean.consolelogger import init_logging
 class EnOceanDongle:
     """Representation of en EnOcean dongle"""
 
-    def __init__(self, hass, serial_path) -> None:
+    def __init__(self, hass, serial_path, delay) -> None:
         """Initialize the dongle"""
         LOGGER.debug("initialize dongle")
         init_logging()
@@ -25,6 +25,7 @@ class EnOceanDongle:
             port=serial_path, callback=self.callback
         )
         self.serial_path = serial_path
+        self.delay = delay
         self.identifier = basename(normpath(serial_path))
         self.hass = hass
         self.dispatcher_disconnect_handle = None
@@ -49,14 +50,14 @@ class EnOceanDongle:
             )
         )
         
-        wait = 0.5
         now = time.time()
-        if self.last_message_time is None or (now - self.last_message_time) > wait:
+        LOGGER.debug("VINCENT : delay of %d" % (self.delay))
+        if self.last_message_time is None or (now - self.last_message_time) > (self.delay/1000.):
             self.last_message_time = now
         else:
-            self.last_message_time = self.last_message_time + wait
-            delay = self.last_message_time - now
-            time.sleep(delay)
+            self.last_message_time = self.last_message_time + (self.delay/1000.)
+            _delay = self.last_message_time - now
+            time.sleep(_delay)
         
         self._communicator.send(packet)
 

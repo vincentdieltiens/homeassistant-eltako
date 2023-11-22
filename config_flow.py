@@ -1,10 +1,10 @@
 """Handle the config flow for Eltako"""
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_DEVICE
-from .const import DOMAIN, ERROR_INVALID_DONGLE_PATH
+from .const import DOMAIN, ERROR_INVALID_DONGLE_PATH, CONF_DELAY
 import voluptuous as vol
 from . import dongle
-
+from homeassistant.core import callback
 
 class EltakoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config"""
@@ -68,3 +68,35 @@ class EltakoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def create_eltako_entry(self, user_input):
         """Create the eltako configuration"""
         return self.async_create_entry(title="Eltako", data=user_input)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return OptionsFlowHandler(config_entry)
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input = None
+    ):
+        """Manage the options."""
+        errors = {}
+        if user_input is not None:
+            return self.async_create_entry(title="Eltako", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_DELAY,
+                        default=self.config_entry.options.get(CONF_DELAY),
+                    ): int
+                }
+            ),
+            errors=errors
+        )
