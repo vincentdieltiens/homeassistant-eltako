@@ -1,5 +1,6 @@
 """handle USB EnOcean Dongle"""
 import glob
+import time
 
 from os.path import basename, normpath
 
@@ -27,6 +28,7 @@ class EnOceanDongle:
         self.identifier = basename(normpath(serial_path))
         self.hass = hass
         self.dispatcher_disconnect_handle = None
+        self.last_message_time = None
 
     async def async_setup(self):
         """Finish the setup of the brigde and supported platforms"""
@@ -46,7 +48,18 @@ class EnOceanDongle:
                 to_hex_string(packet.optional),
             )
         )
+        
+        wait = 0.5
+        now = time.time()
+        if self.last_message_time is None or (now - self.last_message_time) > wait:
+            self.last_message_time = now
+        else:
+            self.last_message_time = self.last_message_time + wait
+            delay = self.last_message_time - now
+            time.sleep(delay)
+        
         self._communicator.send(packet)
+
 
     def send_message(self, packet):
         self._send_message_callback(packet)
