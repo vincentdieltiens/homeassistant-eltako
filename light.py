@@ -17,10 +17,14 @@ from homeassistant.components.light import (
 from homeassistant.const import CONF_DEVICE_ID, CONF_MODEL, CONF_NAME
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity import DeviceInfo
 from enocean.protocol.constants import PACKET, RORG
 
 from .device import EltakoEntity
-from .const import DOMAIN, LOGGER, CONF_SENDER_ID
+from .const import DOMAIN, LOGGER, CONF_SENDER_ID, DATA_ELTAKO
+from .utils import hex_list_to_str
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -31,8 +35,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-
-def setup_platform(
+async def async_setup_platform(
     hass: HomeAssistant,
     config: ConfigType,
     add_entities: AddEntitiesCallback,
@@ -53,6 +56,44 @@ def setup_platform(
 
     add_entities([light])
 
+    # if device_name == "SAM":
+    #     config_entry_id = hass.data[DATA_ELTAKO]["config_entry_id"]
+    #     device_reg = device_registry.async_get(hass)
+    #     dev = device_reg.async_get_or_create(
+    #         config_entry_id=config_entry_id,
+    #         name=light.device_name,
+    #         manufacturer=light.manufacturer,
+    #         model=light.model,
+    #         identifiers={(DOMAIN, light.unique_id)}
+    #     )
+
+    #     LOGGER.debug("VINCENT : entity id " + str(light.unique_id))
+    #     LOGGER.debug("VINCENT : device id " + str(dev.id))
+
+    #     ent_registry = entity_registry.async_get(hass)
+    #     ent_registry.async_get_or_create(
+    #         domain=DOMAIN,
+    #         platform="homeassistant_elatko",
+    #         unique_id=light.unique_id,
+    #         original_icon="mdi:lightbulb",
+    #         device_id=device.id
+    #         #original_device_class="light",
+    #         original_name=hex_list_to_str(light.device_id)
+    #     )
+
+# def async_setup_entry(
+#     hass: HomeAssistant,
+#     entry: ConfigEntry,
+#     async_add_entities: AddEntitiesCallback
+# ):
+#     LOGGER.debug("VINCENT : Calling light.async_setup_entry entry=%s", entry)
+
+#     device_id = [0x00, 0x00, 0x00, 0x00]
+#     sender_id = [0x00, 0x00, 0x00, 0x00]
+#     device_name = "Light_Test"
+#     light = F4SR14Entity(device_id, device_name, sender_id)
+
+#     async_add_entities([light], True)
 
 class EltakoLightEntity(EltakoEntity, LightEntity):
     """Represents a generic Eltako light (F4SR14, FUD14)"""
@@ -132,6 +173,29 @@ class F4SR14Entity(EltakoLightEntity):
         # schedule_update_ha_state()
         print("VINCENT:  update light - light if on : %s" % (str(self._is_on)))
         self.schedule_update_ha_state()
+
+        LOGGER.debug("VINCENT : DATA " + str(self.hass.data[DATA_ELTAKO]))
+
+        # config_entry_id = self.hass.data[DATA_ELTAKO]["config_entry_id"]
+        # device_reg = device_registry.async_get(self.hass)
+        # device_reg.async_get_or_create(
+        #     config_entry_id=config_entry_id,
+        #     name=self.device_name,
+        #     manufacturer=self.manufacturer,
+        #     model=self.model,
+        #     identifiers={(DOMAIN, self.unique_id)}
+        # )
+
+        # ent_registry = entity_registry.async_get(self.hass)
+        # ent_registry.async_get_or_create(
+        #     domain=DOMAIN,
+        #     platform="homeassistant_elatko",
+        #     unique_id=self.unique_id,
+        #     original_icon="mdi:lightbulb",
+        #     device_id=hex_list_to_str(self.device_id),
+        #     #original_device_class="light",
+        #     original_name=hex_list_to_str(self.device_id)
+        # )
 
 
 class FUD14Entity(EltakoLightEntity):

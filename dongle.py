@@ -13,6 +13,7 @@ from enocean.protocol.constants import PACKET, RETURN_CODE
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
 from enocean.consolelogger import init_logging
 
+from homeassistant.helpers.discovery_flow import async_create_flow
 
 class EnOceanDongle:
     """Representation of en EnOcean dongle"""
@@ -83,11 +84,15 @@ class EnOceanDongle:
         if packet.packet_type == PACKET.RESPONSE:  # anwer
             LOGGER.debug("VINCENT : packet is response")
             return_code = packet.data[0]
+
             if (
                 return_code == RETURN_CODE.ERROR
                 or return_code == RETURN_CODE.NOT_SUPPORTED
             ):
                 LOGGER.debug("VINCENT : error !")
+
+            #fm = FlowManager(self.hass)
+            #async_create_flow(self.hass, DOMAIN, handler, {}, packet):
         else:
             LOGGER.debug("VINCENT : packet is not response.")
 

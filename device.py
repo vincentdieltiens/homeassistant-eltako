@@ -3,10 +3,11 @@ from enocean.protocol.packet import Packet
 from enocean.protocol.constants import PACKET, RETURN_CODE
 from enocean.utils import combine_hex, to_hex_string
 
-from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
-from homeassistant.helpers.entity import Entity
-from .const import DOMAIN, SIGNAL_RECEIVE_MESSAGE, SIGNAL_SEND_MESSAGE, LOGGER
+from .utils import hex_list_to_str
 
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
+from homeassistant.helpers.entity import Entity, DeviceInfo
+from .const import DOMAIN, SIGNAL_RECEIVE_MESSAGE, SIGNAL_SEND_MESSAGE, LOGGER
 
 class EltakoEntity(Entity):
     """Parent class for all entities associated with this component"""
@@ -30,10 +31,11 @@ class EltakoEntity(Entity):
         """Handle incoming packet"""
 
         if packet.packet_type == PACKET.RADIO_ERP1:
-            # LOGGER.debug(
-            #     "VINCENT : packet compare %s vs %s"
-            #     % (packet.sender_int, combine_hex(self.device_id))
-            # )
+            LOGGER.debug(
+                "VINCENT : packet compare %s vs %s (%s)"
+                % (packet.sender_int, combine_hex(self.device_id),
+                    hex_list_to_str(self.device_id))
+            )
             if packet.sender_int == combine_hex(self.device_id):
                 # LOGGER.debug("VINCENT : update value")
                 self.value_changed(packet)
@@ -59,12 +61,18 @@ class EltakoEntity(Entity):
 
     @property
     def device_info(self):
-        return {
-            "identifier": {(DOMAIN, self.unique_id)},
+        LOGGER.debug("VINCENT : device_info : " + str({
+            "identifiers": {(DOMAIN, self.unique_id)},
             "name": self.device_name,
             "manufacturer": self.manufacturer,
             "model": self.model,
-        }
+        }))
+        return DeviceInfo({
+            "identifiers": {(DOMAIN, self.unique_id)},
+            "name": self.device_name,
+            "manufacturer": self.manufacturer,
+            "model": self.model
+        })
 
     @property
     def unique_id(self):

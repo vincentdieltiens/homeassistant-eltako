@@ -6,8 +6,18 @@ import voluptuous as vol
 from . import dongle
 from homeassistant.core import callback
 
+# ConfigFlow of HA is used to make the UI when the integration is 
+# added/configured to HA
+# We use this to define the path of the dongle at configuration
+
+# OptionFlow of HA is used to make the UI for options
+# We use this to define the minimum delay between the calls 
+# (see issue https://github.com/vincentdieltiens/homeassistant-eltako/issues/4)
+
 class EltakoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config"""
+
+    # Define the flow to set up the configuration (dongle path)
 
     VERSION = 1
     MANUAL_PATH_VALUE = "Custom path"
