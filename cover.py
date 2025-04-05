@@ -177,39 +177,36 @@ class FSB14Entity(EltakoEntity, CoverEntity):
         # position is inversed in Home Assistant and in EnOcean:
         # 0 means 'closed' in Home Assistant and 'open' in EnOcean
         # 100 means 'open' in Home Assistant and 'closed' in EnOcean
-        LOGGER.debug("VINCENT cover data : ", to_hex_string(packet.data))
+        LOGGER.debug("VINCENT cover data : %s", to_hex_string(packet.data))
 
         rorg = packet.data[0]
-        new_duration = packet.data[2]
-
+        
         # fsb 14 returns :
         # - 0xF6/RPS answer for closing, opening, fully closed and fully opened
         # - BS4 for teach in
         # - BS4 for stop position
         if rorg == RORG.BS4:
+            new_duration = packet.data[2]
+            direction = packet.data[3]  # Direction du mouvement
             
-            self._position = 100 - ((new_duration) / self._duration * 100)
+            # Calcul de la position en fonction de la direction
+            if direction == 0x01:  # Ouverture
+                self._position = (new_duration / self._duration * 100)
+            else:  # Fermeture ou arrêt
+                self._position = 100 - (new_duration / self._duration * 100)
+            
             self._is_opening = False
             self._is_closing = False
-            self._is_closed = self._position == 0
-            # self._is_closed = packet.data[3] == 0x02
-            # self._is_opened = packet.data[3] == 0x01
-            
+            self._is_closed = (self._position == 0)
 
-            # Be sure the position is 0 if closed
-            # if (self._is_closed):
-            #     self.position = 0
-            # elif (self._is_opened):
-            #     self.position = 100
-
-            self.schedule_update_ha_state()
-            
             LOGGER.debug("VINCENT : closed ? : %s (%s)" % (to_hex_string(packet.data[3]), packet.data[3]))
             LOGGER.debug("VINCENT : new duration : %s" % (new_duration))
+            LOGGER.debug("VINCENT : direction : %s" % (direction))
             LOGGER.debug("VINCENT : new position : %s" % (self._position))
             LOGGER.debug("VINCENT : is_opening : %s" % (self._is_opening))
             LOGGER.debug("VINCENT : is_closing : %s" % (self._is_closing))
             LOGGER.debug("VINCENT : is_closed : %s" % (self._is_closed))
+
         elif rorg == RORG.RPS:
             position = packet.data[1]
             if position == 0x50:  # closed
@@ -217,24 +214,33 @@ class FSB14Entity(EltakoEntity, CoverEntity):
                 self._is_opening = False
                 self._is_closing = False
                 self._is_closed = True
-            elif position == 0x70:  # opend
+                LOGGER.debug("VINCENT : RPS - Volet complètement fermé")
+            elif position == 0x70:  # opened
                 self._position = 100
                 self._is_opening = False
                 self._is_closing = False
                 self._is_closed = False
+                LOGGER.debug("VINCENT : RPS - Volet complètement ouvert")
             elif position == 0x02:  # closing
                 self._is_opening = False
                 self._is_closing = True
+                self._is_closed = False  # Le volet n'est pas encore fermé
+                LOGGER.debug("VINCENT : RPS - Volet en cours de fermeture")
             elif position == 0x01:  # opening
                 self._is_opening = True
                 self._is_closing = False
+                self._is_closed = False  # Le volet n'est plus fermé puisqu'il commence à s'ouvrir
+                LOGGER.debug("VINCENT : RPS - Volet en cours d'ouverture")
             else:
+                LOGGER.warning("VINCENT : RPS - Valeur non comprise : %s", position)
                 raise Exception("value not understood")
 
-            self.schedule_update_ha_state()
             LOGGER.debug("VINCENT : new position : %s" % (self._position))
             LOGGER.debug("VINCENT : is_opening : %s" % (self._is_opening))
             LOGGER.debug("VINCENT : is_closing : %s" % (self._is_closing))
+            LOGGER.debug("VINCENT : is_closed : %s" % (self._is_closed))
+
+        self.schedule_update_ha_state()
 
     def send_telegram(self, command: EnOceanCoverCommand, position: int = 0):
         # if self._position is None:
