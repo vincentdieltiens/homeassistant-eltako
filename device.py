@@ -31,19 +31,20 @@ class EltakoEntity(Entity):
         """Handle incoming packet"""
 
         if packet.packet_type == PACKET.RADIO_ERP1:
-            LOGGER.debug(
-                "VINCENT : packet compare %s vs %s (%s)"
-                % (packet.sender_int, combine_hex(self.device_id),
-                    hex_list_to_str(self.device_id))
-            )
+            # LOGGER.debug(
+            #     "VINCENT : packet compare %s vs %s (%s)"
+            #     % (packet.sender_int, combine_hex(self.device_id),
+            #         hex_list_to_str(self.device_id))
+            # )
             if packet.sender_int == combine_hex(self.device_id):
                 # LOGGER.debug("VINCENT : update value")
                 self.value_changed(packet)
         else:
-            LOGGER.debug(
-                "Packet is not of type RADIO_ERP1. Type %s : ",
-                to_hex_string([packet.packet_type]),
-            )
+            # LOGGER.debug(
+            #     "Packet is not of type RADIO_ERP1. Type %s : ",
+            #     to_hex_string([packet.packet_type]),
+            # )
+            pass
 
     def value_changed(self, packet):
         """Updates the internal state of the device when a packet arrives"""

@@ -209,27 +209,50 @@ class FUD14Entity(EltakoLightEntity):
         self._brightness = 77
         self._supported_color_modes = {ColorMode.BRIGHTNESS}
         self._color_mode = ColorMode.BRIGHTNESS
+        
+        # Valeurs observées avec l'interrupteur physique
+        self._MIN_PHYSICAL_VALUE = 34  # Valeur minimale pour avoir de la lumière
+        self._MAX_PHYSICAL_VALUE = 65  # Valeur maximale observée (0x41)
 
-    def turn_on(self, **kwargs: Any) -> None:
-        if (brightness := kwargs.get(ATTR_BRIGHTNESS)) is not None:
-            self._brightness = brightness
-        val = math.floor(self._brightness / 256.0 * 100.0)
-        if val == 0:
-            val = 1
-        print("turn FUD14 on : %s (brightness %s)" % (str(val), self._brightness))
-        data = [0xA5, 0x02, val, 0x00, 0x09]
+    def _calculate_dimming_value(self, brightness):
+        """Calcule la valeur à envoyer au dimmer en fonction de la luminosité demandée"""
+        if brightness == 0:
+            LOGGER.debug(
+                "VINCENT DIMMER : Demande d'extinction (brightness: 0)"
+            )
+            return 0
+            
+        # Convertir brightness (0-255) en valeur physique (MIN-MAX)
+        physical_range = self._MAX_PHYSICAL_VALUE - self._MIN_PHYSICAL_VALUE
+        dimming_value = self._MIN_PHYSICAL_VALUE + math.floor(brightness / 255.0 * physical_range)
+        
+        LOGGER.debug(
+            "VINCENT DIMMER : Conversion brightness -> dimming : %d -> %d (plage physique: %d-%d)",
+            brightness, dimming_value, self._MIN_PHYSICAL_VALUE, self._MAX_PHYSICAL_VALUE
+        )
+        
+        return dimming_value
+
+    def turn_on(self, **kwargs):
+        """Turn the light on"""
+        LOGGER.debug("VINCENT DIMMER : Appel turn_on avec kwargs: %s", kwargs)
+        
+        if ATTR_BRIGHTNESS in kwargs:
+            self._brightness = kwargs[ATTR_BRIGHTNESS]
+            LOGGER.debug("VINCENT DIMMER : Nouvelle brightness demandée: %d", self._brightness)
+            
+        dimming_value = self._calculate_dimming_value(self._brightness)
+        LOGGER.debug("VINCENT DIMMER : Envoi valeur gradation: %d%%", dimming_value)
+        
+        data = [0xA5, 0x02, dimming_value, 0x00, 0x09]
         data.extend(self._sender_id)
         data.extend([0x00])
 
-        # optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
-        optional = [0x00]
-        optional.append(self.device_id)
-        optional.append([0x00, 0x00])
-        optional = []
-
+        optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
         self.send_command(data, optional, 0x01)
-        # don't set _is_on to true, wait for callback
-        # self._is_on = True
+        
+        self._is_on = True
+        self.schedule_update_ha_state()
 
     def turn_off(self, **kwargs: Any) -> None:
         command = [0xA5, 0x02, 0x00, 0x00, 0x08]
@@ -238,9 +261,6 @@ class FUD14Entity(EltakoLightEntity):
 
         optional = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x36, 0x00]
         self.send_command(command, optional, 0x01)
-
-        # don't set ._is_on to false, wait for callback
-        # self._is_on = False
 
     @property
     def brightness(self):
@@ -253,13 +273,34 @@ class FUD14Entity(EltakoLightEntity):
 
     def value_changed(self, packet):
         """Updates the internal state of the device when a packet arrives"""
+        LOGGER.debug(
+            "VINCENT DIMMER : Paquet reçu - RORG: %s, Data: %s",
+            hex(packet.rorg), [hex(x) for x in packet.data]
+        )
+        
         val = packet.data[2]
         self._is_on = bool(val != 0)
+        
         if val != 0:
-            self._brightness = math.floor(val * 256 / 100)
-        # schedule_update_ha_state()
-        print(
-            "VINCENT:  update light - light if on : %s (%s%%)"
-            % (str(self._is_on), str(val))
+            if val < self._MIN_PHYSICAL_VALUE:
+                # Si la valeur est en dessous du minimum, on considère que c'est 0%
+                self._brightness = 0
+            elif val >= self._MAX_PHYSICAL_VALUE:
+                # Si la valeur est au-dessus du maximum, on considère que c'est 100%
+                self._brightness = 255
+            else:
+                # Conversion linéaire de la valeur physique (MIN-MAX) vers brightness (0-255)
+                physical_range = self._MAX_PHYSICAL_VALUE - self._MIN_PHYSICAL_VALUE
+                normalized = (val - self._MIN_PHYSICAL_VALUE) / physical_range
+                self._brightness = math.floor(normalized * 255)
+                
+            LOGGER.debug(
+                "VINCENT DIMMER : Conversion inverse : %d -> %d (%.1f%% de la plage utile)",
+                val, self._brightness, (val - self._MIN_PHYSICAL_VALUE) / physical_range * 100
+            )
+                
+        LOGGER.debug(
+            "VINCENT DIMMER : Mise à jour état - ON: %s, Valeur: %d, Brightness: %d",
+            str(self._is_on), val, self._brightness
         )
         self.schedule_update_ha_state()
