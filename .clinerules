@@ -1,0 +1,33 @@
+# Règles et Conventions du Projet Eltako pour Home Assistant
+
+## Conventions de Code
+- Le code suit les conventions PEP 8 pour le style Python
+- Les noms de classes utilisent le CamelCase (ex: EltakoDongle)
+- Les noms de fonctions et variables utilisent le snake_case (ex: get_device_id)
+- Les constantes sont en MAJUSCULES_AVEC_UNDERSCORES
+- La documentation utilise des docstrings au format Google
+
+## Modèles de Travail
+- Les modifications importantes doivent être testées sur une installation de développement
+- Les fonctionnalités existantes ne doivent pas être altérées sans raison valable
+- Le support des appareils existants doit être maintenu à tout prix
+
+## Gestion des Appareils
+- Chaque type d'appareil a sa propre classe d'entité
+- Les IDs des appareils sont gérés comme des chaînes hexadécimales
+- Le processus de teach-in est documenté pour chaque type d'appareil
+
+## Préférences de Documentation
+- La documentation utilisateur doit être claire et précise
+- Les étapes de configuration doivent être détaillées avec des exemples
+- Les images et schémas sont appréciés pour illustrer les concepts complexes
+
+## Workflow de Développement
+- Exploratory: Comprendre le code existant avant de faire des modifications
+- Évolutif: Ajouter des fonctionnalités sans casser l'existant
+- Documenté: Maintenir la documentation à jour avec le code
+
+## Notes d'Implémentation
+- Le code asynchrone est privilégié pour les opérations d'E/S
+- Les exceptions doivent être gérées gracieusement
+- Les messages de débogage doivent être informatifs mais pas excessifs 
