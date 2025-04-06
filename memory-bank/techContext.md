@@ -1,39 +1,39 @@
-# Contexte Technique: Composant Eltako pour Home Assistant
+# Technical Context: Eltako Component for Home Assistant
 
-## Technologies Utilisées
-1. **Python 3.x**: Langage de programmation principal
-2. **Home Assistant Core**: Plateforme d'intégration domotique
-3. **Protocole EnOcean**: Pour la communication avec les appareils Eltako
-4. **Interface série (pyserial)**: Pour la communication avec le dongle USB300
-5. **Asyncio**: Pour la gestion asynchrone des opérations
+## Technologies Used
+1. **Python 3.x**: Main programming language
+2. **Home Assistant Core**: Home automation integration platform
+3. **EnOcean Protocol**: For communication with Eltako devices
+4. **Serial Interface (pyserial)**: For communication with the USB300 dongle
+5. **Asyncio**: For asynchronous operation management
 
-## Environnement de Développement
-- Système d'exploitation: Compatible Linux, Windows, macOS
-- Environnement virtuel Python recommandé
-- Tests possibles via l'instance de développement Home Assistant
-- Déploiement via HACS ou installation manuelle dans custom_components
+## Development Environment
+- Operating System: Compatible with Linux, Windows, macOS
+- Recommended Python virtual environment
+- Testing possible via Home Assistant development instance
+- Deployment via HACS or manual installation in custom_components
 
-## Dépendances
-- Home Assistant Core (version minimale à déterminer)
-- Bibliothèques Python standard (asyncio, logging, etc.)
-- Bibliothèque pyserial pour la communication série
+## Dependencies
+- Home Assistant Core (minimum version to be determined)
+- Standard Python libraries (asyncio, logging, etc.)
+- Pyserial library for serial communication
 
-## Contraintes Techniques
-1. **Limitations du protocole EnOcean**:
-   - Pas de confirmation de réception des messages
-   - Bande passante limitée
-   - Portée radio variable selon l'environnement
+## Technical Constraints
+1. **EnOcean Protocol Limitations**:
+   - No message receipt confirmation
+   - Limited bandwidth
+   - Variable radio range depending on environment
 
-2. **Limitations matérielles**:
-   - Dépendance au dongle USB300 ou équivalent
-   - Pas de découverte automatique des appareils
+2. **Hardware Limitations**:
+   - Dependency on USB300 dongle or equivalent
+   - No automatic device discovery
 
-3. **Limitations de Home Assistant**:
-   - Nécessité de s'adapter aux cycles de vie des entités
-   - Respect des conventions d'intégration
+3. **Home Assistant Limitations**:
+   - Need to adapt to entity lifecycles
+   - Compliance with integration conventions
    
-## Architecture Technique
-- **Asynchrone**: Utilisation du modèle async/await de Python
-- **Orientée Événements**: Communication basée sur les événements
-- **Modulaire**: Séparation claire des responsabilités entre les modules
-- **Extensible**: Conception permettant l'ajout facile de nouveaux types d'appareils 
+## Technical Architecture
+- **Asynchronous**: Using Python's async/await model
+- **Event-Driven**: Event-based communication
+- **Modular**: Clear separation of responsibilities between modules
+- **Extensible**: Design allowing easy addition of new device types 

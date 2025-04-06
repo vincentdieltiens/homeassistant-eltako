@@ -1,39 +1,39 @@
-# Patterns Système: Composant Eltako pour Home Assistant
+# System Patterns: Eltako Component for Home Assistant
 
-## Architecture Système
-Le composant Eltako s'intègre dans Home Assistant en suivant le modèle d'intégration standard:
-1. Découverte et configuration via config_flow
-2. Communication avec le matériel via la classe Dongle
-3. Représentation des appareils via des entités (lights, covers, binary_sensors)
-4. Gestion des événements via le bus d'événements de Home Assistant
+## System Architecture
+The Eltako component integrates with Home Assistant following the standard integration model:
+1. Discovery and configuration via config_flow
+2. Communication with hardware via the Dongle class
+3. Device representation through entities (lights, covers, binary_sensors)
+4. Event management via the Home Assistant event bus
 
-## Modèles de Conception Clés
-1. **Pattern Entity-Platform**: Chaque type d'appareil (lumière, volet) est implémenté comme une entité distincte
-2. **Pattern Observer**: Les entités s'abonnent aux événements du dongle pour recevoir les mises à jour d'état
-3. **Pattern Command**: Traduction des actions Home Assistant en commandes pour les appareils Eltako
-4. **Pattern Repository**: Gestion centralisée des entités et de leurs états
+## Key Design Patterns
+1. **Entity-Platform Pattern**: Each device type (light, cover) is implemented as a separate entity
+2. **Observer Pattern**: Entities subscribe to dongle events to receive state updates
+3. **Command Pattern**: Translation of Home Assistant actions into commands for Eltako devices
+4. **Repository Pattern**: Centralized management of entities and their states
 
-## Structure des Composants
+## Component Structure
 ```
 homeassistant_eltako/
-├── __init__.py            # Point d'entrée de l'intégration
-├── config_flow.py         # Flux de configuration
-├── const.py               # Constantes
-├── dongle.py              # Communication avec le transceiver
-├── binary_sensor.py       # Entités de capteur binaire
-├── light.py               # Entités d'éclairage
-├── cover.py               # Entités de volet
-└── utils.py               # Fonctions utilitaires
+├── __init__.py            # Integration entry point
+├── config_flow.py         # Configuration flow
+├── const.py               # Constants
+├── dongle.py              # Transceiver communication
+├── binary_sensor.py       # Binary sensor entities
+├── light.py               # Light entities
+├── cover.py               # Cover entities
+└── utils.py               # Utility functions
 ```
 
-## Flux de Données
-1. **Entrée**: Les messages radio sont reçus par le dongle USB
-2. **Traitement**: Le dongle décode les messages et les envoie au bus d'événements
-3. **Distribution**: Les entités concernées reçoivent les événements et mettent à jour leur état
-4. **Sortie**: Les commandes des utilisateurs sont traduites en messages radio et envoyées par le dongle
+## Data Flow
+1. **Input**: Radio messages are received by the USB dongle
+2. **Processing**: The dongle decodes messages and sends them to the event bus
+3. **Distribution**: Relevant entities receive events and update their state
+4. **Output**: User commands are translated into radio messages and sent by the dongle
 
-## Décisions Techniques Majeures
-1. Utilisation d'un modèle de communication asynchrone pour la stabilité
-2. Séparation claire entre la communication matérielle et la logique métier
-3. Flexibilité pour ajouter de nouveaux types d'appareils
-4. Gestion explicite des IDs et des processus de teach-in 
+## Major Technical Decisions
+1. Use of an asynchronous communication model for stability
+2. Clear separation between hardware communication and business logic
+3. Flexibility to add new device types
+4. Explicit management of IDs and teach-in processes 

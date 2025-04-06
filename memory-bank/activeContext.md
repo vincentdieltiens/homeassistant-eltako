@@ -1,28 +1,28 @@
-# Contexte Actif: Composant Eltako pour Home Assistant
+# Active Context: Eltako Component for Home Assistant
 
-## Focus Actuel
-- Mise en place du système Memory Bank pour le projet
-- Étude et compréhension de la structure du code existant
-- Préparation pour d'éventuelles améliorations ou ajouts de fonctionnalités
+## Current Focus
+- Implementation of the Memory Bank system for the project
+- Study and understanding of the existing code structure
+- Preparation for potential improvements or feature additions
 
-## Changements Récents
-- Création de la structure du Memory Bank (dossier et fichiers principaux)
-- Documentation de l'architecture et du contexte technique du projet
-- Aucune modification du code source à ce stade
+## Recent Changes
+- Creation of the Memory Bank structure (folder and main files)
+- Documentation of the architecture and technical context of the project
+- No modifications to the source code at this stage
 
-## Prochaines Étapes
-1. Explorer en détail le code source existant pour mieux comprendre l'implémentation
-2. Identifier les opportunités d'amélioration ou d'extension du composant
-3. Documenter les processus de test et de déploiement
-4. Envisager l'ajout de nouveaux types d'appareils Eltako si nécessaire
+## Next Steps
+1. Explore the existing source code in detail to better understand the implementation
+2. Identify opportunities for improvement or extension of the component
+3. Document testing and deployment processes
+4. Consider adding new Eltako device types if needed
 
-## Décisions et Considérations Actives
-- Maintenir la compatibilité avec les installations existantes
-- Privilégier la stabilité et la fiabilité du composant
-- Documenter clairement les processus d'installation et de configuration
-- Faciliter la contribution par d'autres développeurs
+## Active Decisions and Considerations
+- Maintain compatibility with existing installations
+- Prioritize component stability and reliability
+- Clearly document installation and configuration processes
+- Facilitate contribution by other developers
 
-## Questions Ouvertes
-- Quels autres types d'appareils Eltako pourraient être ajoutés?
-- Comment améliorer l'expérience utilisateur lors de la configuration?
-- Quelles sont les priorités pour les prochaines fonctionnalités? 
+## Open Questions
+- What other Eltako device types could be added?
+- How can the user experience during configuration be improved?
+- What are the priorities for the next features? 

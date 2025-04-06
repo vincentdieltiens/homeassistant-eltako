@@ -1,33 +1,33 @@
-# Suivi de Progression: Composant Eltako pour Home Assistant
+# Progress Tracking: Eltako Component for Home Assistant
 
-## Fonctionnalités Opérationnelles
-- ✅ Communication avec le dongle USB300
-- ✅ Support des appareils F4SR14 (éclairage simple)
-- ✅ Support des appareils FUD14 (variateur)
-- ✅ Support des appareils FSB14 (volet roulant)
-- ✅ Configuration via l'interface utilisateur de Home Assistant
-- ✅ Intégration avec le système d'automatisation de Home Assistant
+## Operational Features
+- ✅ Communication with USB300 dongle
+- ✅ Support for F4SR14 devices (simple light)
+- ✅ Support for FUD14 devices (dimmer)
+- ✅ Support for FSB14 devices (cover)
+- ✅ Configuration via Home Assistant user interface
+- ✅ Integration with Home Assistant automation system
 
-## En Cours de Développement
-- 🔄 Mise en place du système Memory Bank
-- 🔄 Documentation complète du projet
+## In Development
+- 🔄 Implementation of Memory Bank system
+- 🔄 Complete project documentation
 
-## À Faire
-- ⏳ Amélioration de la documentation utilisateur
-- ⏳ Tests automatisés
-- ⏳ Support pour d'autres types d'appareils Eltako
-- ⏳ Optimisation des performances
-- ⏳ Amélioration du processus de teach-in
+## To Do
+- ⏳ Improve user documentation
+- ⏳ Automated testing
+- ⏳ Support for other Eltako device types
+- ⏳ Performance optimization
+- ⏳ Improvement of teach-in process
 
-## Problèmes Connus
-- ⚠️ Le processus de teach-in peut être complexe pour les nouveaux utilisateurs
-- ⚠️ Pas de découverte automatique des appareils
-- ⚠️ Dépendance à un dongle USB externe
+## Known Issues
+- ⚠️ Teach-in process can be complex for new users
+- ⚠️ No automatic device discovery
+- ⚠️ Dependency on external USB dongle
 
-## Jalons
-| Jalon | Statut | Date |
+## Milestones
+| Milestone | Status | Date |
 |-------|--------|------|
-| Support des appareils de base | ✅ Terminé | - |
-| Interface de configuration | ✅ Terminé | - |
-| Documentation du Memory Bank | 🔄 En cours | Aujourd'hui |
-| Ajout de nouveaux types d'appareils | ⏳ Planifié | - | 
+| Basic device support | ✅ Completed | - |
+| Configuration interface | ✅ Completed | - |
+| Memory Bank documentation | 🔄 In progress | Today |
+| New device types | ⏳ Planned | - | 

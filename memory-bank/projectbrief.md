@@ -1,39 +1,37 @@
-# Composant Eltako pour Home Assistant
+# Project Brief: Eltako Component for Home Assistant
 
-## Objectif du Projet
-Ce composant vise à permettre le contrôle des appareils Eltako (F4SR14, FSB14, FUD14) dans Home Assistant. Il s'agit d'une intégration personnalisée qui permet aux utilisateurs de Home Assistant d'interagir avec leur système domotique Eltako.
+## Overview
+This component enables the integration and control of Eltako devices with Home Assistant. It provides a bridge between Eltako's proprietary wireless protocol and the Home Assistant automation platform, allowing users to control their Eltako devices through a unified interface.
 
-## Inspiration et Sources
-Le projet est inspiré par :
-- Le composant Eltako personnalisé (https://gitlab.com/chrysn/home-assistant-eltako)
-- La bibliothèque Eltakobus (https://gitlab.com/chrysn/eltakobus)
-- Le composant EnOcean par kipe (https://github.com/kipe/enocean)
+## Inspiration
+The project is inspired by:
+- Eltako custom component (https://gitlab.com/chrysn/home-assistant-eltako)
+- Eltakobus library (https://gitlab.com/chrysn/eltakobus)
+- EnOcean component by kipe (https://github.com/kipe/enocean)
 
-## Appareils Supportés
-Actuellement, le composant prend en charge :
-- F4SR14 (Éclairage Simple)
-- FUD14 (Variateur)
-- FSB14 (Volet Roulant)
+## Currently Supported Devices
+- F4SR14 (Simple Light)
+- FUD14 (Dimmer)
+- FSB14 (Cover)
 
-## Prérequis Techniques
-1. Transceiver externe (USB300 ou "EnOcean PI") pour la communication
-2. Système de "teach-in" pour l'appairage des appareils
-3. Gestion des ID uniques pour chaque élément
-4. Configuration des interrupteurs virtuels avec ID de base + offset
+## Key Technical Requirements
+1. External transreceiver (USB300 or EnOcean PI) for communication with the Eltako system
+2. Teach-in process for device registration as Eltako is not auto-discovery compatible
+3. Unique ID management for all elements in the system
+4. Virtual switch creation with proper ID management
 
-## Contraintes Techniques
-- Pas de découverte automatique des appareils
-- Nécessité de configurer manuellement les ID des appareils
-- Les interrupteurs physiques ne peuvent pas être enregistrés directement dans HA
-- Plage d'offset limitée [0, 128] pour les interrupteurs virtuels
+## Core Goals
+1. Provide reliable control of Eltako devices through Home Assistant
+2. Support the most common Eltako device types
+3. Deliver a user-friendly configuration experience
+4. Enable seamless integration with Home Assistant's automation capabilities
+5. Allow community contributions for additional device support
 
-## Objectifs de Développement
-1. Maintenir la stabilité du composant existant
-2. Faciliter l'ajout de nouveaux types d'appareils
-3. Améliorer la documentation et l'expérience utilisateur
-4. Encourager la contribution de la communauté
+## Limitations and Constraints
+- Requires external USB hardware
+- Manual device registration (teach-in process)
+- Base ID and device ID management
+- No automatic device discovery
 
-## Public Cible
-- Utilisateurs de Home Assistant
-- Propriétaires d'appareils Eltako
-- Développeurs souhaitant contribuer au projet
+## Future Development
+This component is open for expansion to support additional Eltako devices. Community contributions are welcome to extend the functionality and device coverage.
