@@ -5,7 +5,7 @@ from .services import async_setup_services
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_DEVICE, Platform
-from homeassistant.core import Config, HomeAssistant
+from homeassistant.core import HomeAssistant
 
 from .dongle import EnOceanDongle
 from .const import DATA_ELTAKO, DOMAIN, CONF_DELAY, LOGGER, PLATFORMS
